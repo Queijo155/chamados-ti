@@ -23,12 +23,28 @@
         <span class="nav-label">Geral</span>
         <a href="/" id="nav-dashboard" class="nav-link <%= currentPath === '/' ? 'active' : '' %>"><%- icon('dashboard') %><span>Dashboard</span></a>
         <a href="/tickets" id="nav-tickets" class="nav-link <%= currentPath.startsWith('/tickets') ? 'active' : '' %>"><%- icon('ticket') %><span>Chamados</span></a>
-        <span class="nav-label">Cadastros</span>
-        <a href="/technicians" id="nav-technicians" class="nav-link <%= currentPath.startsWith('/technicians') ? 'active' : '' %>"><%- icon('users') %><span>Técnicos</span></a>
-        <a href="/categories" id="nav-categories" class="nav-link <%= currentPath.startsWith('/categories') ? 'active' : '' %>"><%- icon('tag') %><span>Categorias</span></a>
+        <% if (isAdmin) { %>
+          <span class="nav-label">Administração</span>
+          <a href="/admin/usuarios" id="nav-usuarios" class="nav-link <%= currentPath.startsWith('/admin') ? 'active' : '' %>"><%- icon('shield') %><span>Usuários</span></a>
+          <a href="/categories" id="nav-categories" class="nav-link <%= currentPath.startsWith('/categories') ? 'active' : '' %>"><%- icon('tag') %><span>Categorias</span></a>
+        <% } %>
       </nav>
 
       <a href="/tickets/new" class="btn btn-primary btn-block sidebar-cta" id="sidebar-new-ticket"><%- icon('plus') %> Novo chamado</a>
+
+      <% if (user) { %>
+        <div class="user-box" id="user-box">
+          <span class="avatar"><%= iniciais(user.nome) %></span>
+          <div class="user-info">
+            <strong id="user-nome" title="<%= user.nome %>"><%= user.nome %></strong>
+            <span class="muted user-email" title="<%= user.email %>"><%= user.email %></span>
+            <span class="badge badge-<%= PERFIS[user.perfil].cor %>" id="user-perfil"><%= PERFIS[user.perfil].label %></span>
+          </div>
+          <form method="POST" action="/logout" class="user-logout">
+            <button type="submit" class="btn btn-ghost btn-sm" id="btn-sair" title="Sair"><%- icon('logout', 16) %> Sair</button>
+          </form>
+        </div>
+      <% } %>
     </aside>
 
     <main class="main">

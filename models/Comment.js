@@ -14,9 +14,10 @@ const Comment = sequelize.define(
       allowNull: false,
       validate: { notEmpty: { msg: 'O comentário não pode ficar vazio.' } },
     },
-    // "comentario" = escrito por alguém | "sistema" = histórico automático
+    // "comentario" = escrito pelo solicitante | "parecer" = parecer técnico (técnico/admin)
+    // | "sistema" = histórico automático
     tipo: {
-      type: DataTypes.ENUM('comentario', 'sistema'),
+      type: DataTypes.ENUM('comentario', 'parecer', 'sistema'),
       allowNull: false,
       defaultValue: 'comentario',
     },

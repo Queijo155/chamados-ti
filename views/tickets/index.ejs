@@ -4,7 +4,7 @@
   <div>
     <p class="eyebrow">Atendimento</p>
     <h1>Chamados</h1>
-    <p class="subtitle"><%= tickets.length %> <%= tickets.length === 1 ? 'chamado encontrado' : 'chamados encontrados' %></p>
+    <p class="subtitle"><%= tickets.length %> <%= tickets.length === 1 ? 'chamado encontrado' : 'chamados encontrados' %><%= isStaff ? '' : ' · você vê apenas os chamados abertos por você' %></p>
   </div>
   <a href="/tickets/new" class="btn btn-primary" id="list-new-ticket"><%- icon('plus') %> Novo chamado</a>
 </header>
@@ -35,13 +35,13 @@
       <option value="<%= c.id %>" <%= String(filtros.categoria) === String(c.id) ? 'selected' : '' %>><%= c.nome %></option>
     <% }) %>
   </select>
-  <select name="tecnico" id="filter-tecnico" aria-label="Técnico">
-    <option value="">Todos técnicos</option>
-    <option value="nenhum" <%= filtros.tecnico === 'nenhum' ? 'selected' : '' %>>Não atribuído</option>
-    <% tecnicos.forEach(function (t) { %>
-      <option value="<%= t.id %>" <%= String(filtros.tecnico) === String(t.id) ? 'selected' : '' %>><%= t.nome %></option>
-    <% }) %>
+  <% if (isStaff) { %>
+  <select name="tecnico" id="filter-tecnico" aria-label="Responsável">
+    <option value="">Todos os chamados</option>
+    <option value="nenhum" <%= filtros.tecnico === 'nenhum' ? 'selected' : '' %>>Não atribuídos</option>
+    <option value="meus" <%= filtros.tecnico === 'meus' ? 'selected' : '' %>>Atribuídos a mim</option>
   </select>
+  <% } %>
   <button type="submit" class="btn btn-secondary" id="filter-submit"><%- icon('filter', 16) %> Filtrar</button>
   <% if (filtros.q || filtros.prioridade || filtros.categoria || filtros.tecnico) { %>
     <a href="/tickets<%= filtros.status ? '?status=' + filtros.status : '' %>" class="btn btn-ghost" id="filter-clear"><%- icon('x', 16) %> Limpar</a>

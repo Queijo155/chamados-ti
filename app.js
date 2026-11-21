@@ -4,10 +4,15 @@ const methodOverride = require('method-override');
 const { sequelize } = require('./models');
 const routes = require('./routes');
 const locals = require('./middlewares/locals');
+const { carregarUsuario } = require('./middlewares/auth');
+const { verificarConfiguracao } = require('./config/firebase');
 const seed = require('./seeders/seed');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// Atrás do proxy do Render (HTTPS): necessário para o cookie de sessão "secure" funcionar.
+app.set('trust proxy', 1);
 
 // View engine
 app.set('view engine', 'ejs');
@@ -15,9 +20,11 @@ app.set('views', path.join(__dirname, 'views'));
 
 // Middlewares
 app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
 app.use(methodOverride('_method')); // permite PUT/PATCH/DELETE via formulários (?_method=PUT)
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(locals);
+app.use(carregarUsuario); // identifica o usuário logado e o perfil (req.user)
 
 // Rotas
 app.use(routes);
@@ -36,6 +43,7 @@ app.use((err, req, res, next) => {
 
 (async () => {
   try {
+    verificarConfiguracao();
     await sequelize.sync();
     await seed({ onlyIfEmpty: true });
     app.listen(PORT, () => {

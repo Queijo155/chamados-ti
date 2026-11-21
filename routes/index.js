@@ -2,39 +2,45 @@ const express = require('express');
 const dashboard = require('../controllers/dashboardController');
 const tickets = require('../controllers/ticketController');
 const comments = require('../controllers/commentController');
-const technicians = require('../controllers/technicianController');
 const categories = require('../controllers/categoryController');
+const authCtrl = require('../controllers/authController');
+const admin = require('../controllers/adminController');
+const { exigirLogin, exigirPerfil } = require('../middlewares/auth');
 
 const router = express.Router();
+
+// ---------- Rotas públicas (login) ----------
+router.get('/login', authCtrl.paginaLogin);
+router.post('/auth/session', authCtrl.criarSessao);
+router.post('/logout', authCtrl.logout);
+
+// ---------- A partir daqui é preciso estar logado ----------
+router.use(exigirLogin);
 
 // Dashboard
 router.get('/', dashboard.index);
 
-// Chamados
+// Chamados (user: só os próprios; tecnico/admin: todos — filtro feito nos controllers)
 router.get('/tickets', tickets.index);
 router.get('/tickets/new', tickets.new);
 router.post('/tickets', tickets.create);
 router.get('/tickets/:id', tickets.show);
-router.get('/tickets/:id/edit', tickets.edit);
-router.put('/tickets/:id', tickets.update);
-router.patch('/tickets/:id/quick', tickets.quickUpdate);
-router.delete('/tickets/:id', tickets.destroy);
+router.get('/tickets/:id/edit', exigirPerfil('admin'), tickets.edit);
+router.put('/tickets/:id', exigirPerfil('admin'), tickets.update);
+router.patch('/tickets/:id/quick', exigirPerfil('tecnico', 'admin'), tickets.quickUpdate); // atendimento
+router.delete('/tickets/:id', exigirPerfil('admin'), tickets.destroy);
 router.post('/tickets/:id/comments', comments.create);
 
-// Técnicos
-router.get('/technicians', technicians.index);
-router.get('/technicians/new', technicians.new);
-router.post('/technicians', technicians.create);
-router.get('/technicians/:id/edit', technicians.edit);
-router.put('/technicians/:id', technicians.update);
-router.delete('/technicians/:id', technicians.destroy);
+// Gestão de usuários (admin)
+router.get('/admin/usuarios', exigirPerfil('admin'), admin.usuarios);
+router.post('/admin/usuarios/:uid/perfil', exigirPerfil('admin'), admin.alterarPerfil);
 
-// Categorias
-router.get('/categories', categories.index);
-router.get('/categories/new', categories.new);
-router.post('/categories', categories.create);
-router.get('/categories/:id/edit', categories.edit);
-router.put('/categories/:id', categories.update);
-router.delete('/categories/:id', categories.destroy);
+// Categorias (admin)
+router.get('/categories', exigirPerfil('admin'), categories.index);
+router.get('/categories/new', exigirPerfil('admin'), categories.new);
+router.post('/categories', exigirPerfil('admin'), categories.create);
+router.get('/categories/:id/edit', exigirPerfil('admin'), categories.edit);
+router.put('/categories/:id', exigirPerfil('admin'), categories.update);
+router.delete('/categories/:id', exigirPerfil('admin'), categories.destroy);
 
 module.exports = router;

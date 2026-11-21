@@ -34,15 +34,6 @@
           <% }) %>
         </select>
       </div>
-      <div class="field">
-        <label for="technicianId">Técnico responsável</label>
-        <select id="technicianId" name="technicianId">
-          <option value="">Não atribuído</option>
-          <% tecnicos.forEach(function (t) { %>
-            <option value="<%= t.id %>" <%= String(ticket.technicianId) === String(t.id) ? 'selected' : '' %>><%= t.nome %></option>
-          <% }) %>
-        </select>
-      </div>
     </div>
 
     <fieldset class="field">
@@ -71,13 +62,14 @@
 
   <aside class="card">
     <h2 class="form-section"><%- icon('user') %> Solicitante</h2>
+    <p class="muted" style="margin-top:-6px">Preenchido automaticamente com a sua conta.</p>
     <div class="field">
-      <label for="solicitante">Nome <span class="req">*</span></label>
-      <input type="text" id="solicitante" name="solicitante" value="<%= ticket.solicitante || '' %>" placeholder="Quem está solicitando?" required>
+      <label for="solicitante">Nome</label>
+      <input type="text" id="solicitante" value="<%= isEdit ? (ticket.autorNome || ticket.solicitante) : user.nome %>" disabled>
     </div>
     <div class="field">
       <label for="emailSolicitante">E-mail</label>
-      <input type="email" id="emailSolicitante" name="emailSolicitante" value="<%= ticket.emailSolicitante || '' %>" placeholder="nome@empresa.com">
+      <input type="email" id="emailSolicitante" value="<%= isEdit ? (ticket.autorEmail || ticket.emailSolicitante || '') : user.email %>" disabled>
     </div>
     <div class="field">
       <label for="setor">Setor</label>

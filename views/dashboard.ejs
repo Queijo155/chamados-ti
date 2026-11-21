@@ -4,7 +4,7 @@
   <div>
     <p class="eyebrow"><%= formatDate(new Date(), false) %></p>
     <h1>Painel de chamados</h1>
-    <p class="subtitle">Visão geral da fila de suporte e da carga da equipe.</p>
+    <p class="subtitle"><%= isStaff ? 'Visão geral da fila de suporte e da carga da equipe.' : 'Resumo dos chamados que você abriu.' %></p>
   </div>
   <a href="/tickets/new" class="btn btn-primary" id="dash-new-ticket"><%- icon('plus') %> Abrir chamado</a>
 </header>
@@ -22,16 +22,16 @@
     <span class="stat-value" data-count="<%= porStatus.em_andamento %>"><%= porStatus.em_andamento %></span>
     <span class="stat-foot"><%= porStatus.aberto %> aguardando atendimento</span>
   </a>
-  <a href="/tickets?tecnico=nenhum&status=ativos" class="stat-card stat-red" id="stat-sem-tecnico">
+  <a href="/tickets?<%= isStaff ? 'tecnico=nenhum&' : '' %>status=ativos" class="stat-card stat-red" id="stat-sem-tecnico">
     <span class="stat-icon"><%- icon('alert', 22) %></span>
     <span class="stat-label">Sem responsável</span>
     <span class="stat-value" data-count="<%= semTecnico %>"><%= semTecnico %></span>
-    <span class="stat-foot">precisam ser atribuídos</span>
+    <span class="stat-foot"><%= isStaff ? 'precisam ser atribuídos' : 'ainda sem técnico' %></span>
   </a>
   <a href="/tickets?status=resolvido" class="stat-card stat-green" id="stat-resolvidos">
     <span class="stat-icon"><%- icon('check', 22) %></span>
     <span class="stat-label">Resolvidos</span>
-    <span class="stat-value" data-count="<%= porStatus.resolvido + porStatus.fechado %>"><%= porStatus.resolvido + porStatus.fechado %></span>
+    <span class="stat-value" data-count="<%= porStatus.resolvido %>"><%= porStatus.resolvido %></span>
     <span class="stat-foot">tempo médio: <%= formatDuration(tempoMedio) %></span>
   </a>
 </section>
@@ -57,8 +57,8 @@
               </div>
               <div class="ticket-row-side">
                 <span class="badge badge-<%= PRIORIDADES[t.prioridade].cor %>"><%= PRIORIDADES[t.prioridade].label %></span>
-                <% if (t.tecnico) { %>
-                  <span class="avatar avatar-sm" title="<%= t.tecnico.nome %>"><%= t.tecnico.iniciais %></span>
+                <% if (t.tecnicoResponsavel) { %>
+                  <span class="avatar avatar-sm" title="<%= t.tecnicoResponsavel %>"><%= iniciais(t.tecnicoResponsavel) %></span>
                 <% } else { %>
                   <span class="avatar avatar-sm avatar-empty" title="Sem responsável">?</span>
                 <% } %>
@@ -95,30 +95,32 @@
     </ul>
   </section>
 
+  <% if (isStaff) { %>
   <section class="card" aria-labelledby="h-equipe">
     <div class="card-head">
       <h2 id="h-equipe"><%- icon('users') %> Carga da equipe</h2>
-      <a href="/technicians" class="link-muted">Gerenciar</a>
     </div>
-    <% const maxT = Math.max(1, ...tecnicos.map(function (t) { return t.ativos; })); %>
+    <% const maxT = Math.max(1, ...equipe.map(function (t) { return t.ativos; })); %>
     <ul class="team">
-      <% tecnicos.forEach(function (t) { %>
+      <% equipe.forEach(function (t) { %>
         <li>
-          <span class="avatar"><%= t.iniciais %></span>
+          <span class="avatar"><%= iniciais(t.nome) %></span>
           <div class="team-info">
             <div class="team-top"><strong><%= t.nome %></strong><span class="muted"><%= t.ativos %> ativos · <%= t.resolvidos %> concluídos</span></div>
             <span class="bar-track"><span class="bar-fill fill-indigo" style="--w: <%= (t.ativos / maxT) * 100 %>%"></span></span>
           </div>
         </li>
       <% }) %>
-      <% if (!tecnicos.length) { %><li class="muted">Nenhum técnico ativo cadastrado.</li><% } %>
+      <% if (!equipe.length) { %><li class="muted">Nenhum chamado foi assumido ainda.</li><% } %>
     </ul>
   </section>
+
+  <% } %>
 
   <section class="card" aria-labelledby="h-categorias">
     <div class="card-head">
       <h2 id="h-categorias"><%- icon('tag') %> Por categoria</h2>
-      <a href="/categories" class="link-muted">Gerenciar</a>
+      <% if (isAdmin) { %><a href="/categories" class="link-muted">Gerenciar</a><% } %>
     </div>
     <% const maxC = Math.max(1, ...categorias.map(function (c) { return c.total; })); %>
     <div class="bars">
